@@ -70,10 +70,11 @@ def prob3b(reltol):
 def prob3c(num):
     def error(w):
         gen = sor(w)(A,b)
-        j, x = gen.next()
+        for i in range(num):
+            j, x = gen.next()
         return numpy.linalg.norm(actual - x) / numpy.linalg.norm(x)
 
-    w = 1.1
+    w = 1
     dx = 100
     while dx > 10 ** -20:
         e = error(w)
