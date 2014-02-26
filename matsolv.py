@@ -28,7 +28,7 @@ def jacobi(A, b):
         yield k, x
 
 def sor(w):
-    # First function call parameterizes SOR.
+    # First function call parameterizes SOR and returns a new function.
     def parameterized_sor(A, b):
         assert len(A) == len(b)
         indices = range(len(A))
@@ -42,14 +42,10 @@ def sor(w):
 # Gauss Seidel is a special case of SOR. This is me being lazy, but oh well.
 gauss_seidel = sor(1)
 
-"""
-Usage demonstrated in the functions prob3a and prob3b.
-"""
-
 def tol(fn, A, b, tolerance, actual, absolute=True):
     last = numpy.zeros(len(A))
     for (k, x) in fn(A, b):
-        error = max(abs(actual - x)) if absolute else numpy.linalg.norm(x - last) / numpy.linalg.norm(x)
+        error = numpy.linalg.norm(actual - x) if absolute else numpy.linalg.norm(x - last) / numpy.linalg.norm(x)
         if error < tolerance:
             return k, x
         last = numpy.copy(x)
@@ -70,3 +66,23 @@ def prob3b(reltol):
     for (name, fn) in [("Jacobi", jacobi), ("Gauss Seidel", gauss_seidel), ("SOR", sor(1.1))]:
         i, soln = tol(fn, A, b, reltol, actual, False)
         print "%s converged in %d iterations." % (name, i)
+
+def prob3c(num):
+    def error(w):
+        gen = sor(w)(A,b)
+        j, x = gen.next()
+        return numpy.linalg.norm(actual - x) / numpy.linalg.norm(x)
+
+    w = 1.1
+    dx = 100
+    while dx > 10 ** -20:
+        e = error(w)
+        left_e = error(w - dx)
+        right_e = error(w + dx)
+        if left_e < e and right_e > left_e:
+            w = w - dx
+        elif right_e < e:
+            w = w + dx
+        else:
+            dx /= 2.
+    return w
